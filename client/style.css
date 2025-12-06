@@ -922,7 +922,7 @@ span .bubble_text{
 }
 .glowies-text {
   /* Make the custom tag behave like a block element */
-  display: block;
+
 
   /* Set the base text color */
   color: #000;

@@ -1000,7 +1000,7 @@ async function clipboard(text) {
         if (settings.autorun != undefined && settings.autorun.command.endsWith("mode")) socket.emit("command", { command: settings.autorun.command, param: settings.autorun.param })
 
         socket.on("leave", guid => {
-            pushlog(agents[guid].pub.dispname + " hasleft.");
+            pushlog(agents[guid].pub.dispname + " has left.");
             agents[guid].kill();
             $("room_count").innerHTML = Object.keys(agents).length;
         })
