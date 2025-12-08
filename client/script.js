@@ -711,7 +711,7 @@ async function clipboard(text) {
                         items: [
                             {
                                 type: 0,
-                                name: "Heil",
+                                name: "Hail",
                                 callback: (passthrough) => {
                                     socket.emit("command", { command: "heil", param: passthrough.pub.name });
                                 }
