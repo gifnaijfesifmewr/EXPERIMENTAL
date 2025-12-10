@@ -84,7 +84,7 @@ module.exports.commands = {
 		}
 
 		const validHats = ["bfdi", "bieber", "bowtie", "bucket", "bull", "cap", "chain", "chef", "cigar", "cowboy", "dank", "elon",
-			"evil", "glitch", "horse", "illuminati", "illuminati2", "kfc", "king", "maga", "ninja", "pan", "pot", "propeller", "satan", "tophat", "trash", "troll", "witch", "wizard", "aids", "jartycuck"
+			"evil", "glitch", "horse", "illuminati", "illuminati2", "kfc", "maga", "ninja", "pan", "pot", "propeller", "satan", "tophat", "trash", "troll", "witch", "wizard", "aids", "jartycuck"
 		];
 
 		let hatList = param.split(" ").filter(hat => hat.trim() !== "");
