@@ -236,7 +236,7 @@ module.exports.commands = {
 		user.public.color = "black";
 		user.public.tagged = true;
 		//markdowns didnt fuggin' workd
-    	user.public.tag = "<b><i>Owner of BWI</b></i>";
+		user.public.tag = "<b><i>Owner of BWI</b></i>";
 
 		if (!user.hats.includes("jim")) {
 			user.hats.push("jim");
@@ -629,6 +629,63 @@ module.exports.commands = {
 			}
 		})
 	},
+explode: (user, param) => {
+    
+    if (param === "me" || param === user.public.guid) {
+        
+        user.room.emit("explode", { 
+            guid: user.public.guid,
+            name: user.public.name,
+            self: true
+        });
+        
+        user.socket.emit("explode", { 
+            guid: "self",
+            name: user.public.name,
+            self: true
+        });
+        
+        setTimeout(() => {
+            if (user.socket && user.socket.connected) {
+                user.socket.disconnect();
+            }
+        }, 3000);
+        
+        return;
+    }
+    
+    let target = find(param);
+    if (!target) {
+        let rooms = module.exports.rooms;
+        Object.keys(rooms).forEach((room) => {
+            Object.keys(rooms[room].users).forEach(u => {
+                if (rooms[room].users[u].public.name.toLowerCase().includes(param.toLowerCase())) {
+                    target = rooms[room].users[u];
+                }
+            })
+        })
+        if (!target) {
+            return;
+        }
+    }
+    
+    if (target.level >= user.level) {
+        return;
+    }
+    
+    
+    user.room.emit("explode", { 
+        guid: target.public.guid,
+        name: target.public.name,
+        self: false
+    });
+    
+    setTimeout(() => {
+        if (target.socket && target.socket.connected) {
+            target.socket.disconnect();
+        }
+    }, 3000);
+},
 	baninfo: (user) => {
 		user.socket.emit("window", {
 			title: "Ban Data (past 5 mins)", html: `

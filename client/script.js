@@ -405,6 +405,19 @@ async function clipboard(text) {
             this.pub = upub;
             this.hats = upub.hats || [];
 
+            this.physics = {
+                x: x,
+                y: y,
+                rotation: 0,
+                velocityX: 0,
+                velocityY: 0,
+                angularVelocity: 0,
+                gravity: 2,
+                isFalling: false,
+                exploded: false
+            };
+            this.element = this.parent;
+
             if (image.startsWith("http") && (settings.disableCCs || settings.under)) image = "purple";
             if (spritesheets[image] == undefined) {
                 let img = new Image();
@@ -524,6 +537,73 @@ async function clipboard(text) {
                 $(this.id + "t").innerHTML = linkify(write);
                 pushlog("<font color='" + this.pub.color + "'>" + this.pub.name + ": </font>" + linkify(write));
             }, 100)
+        }
+        explode() {
+            if (this.exploded) return;
+            this.exploded = true;
+
+            //oh yeah the nametag spins faster than the bonzi itself????
+            //yeah no i gave up.
+
+            let startX = this.x;
+            let startY = this.y;
+            let elem = this.parent;
+
+            let explosion = document.createElement("div");
+            explosion.className = "explosion";
+            explosion.style.left = startX + "px";
+            explosion.style.top = startY + "px";
+            document.body.appendChild(explosion);
+            let sfx = new Audio("./explosion.mp3");
+            sfx.volume = 0.5;
+            sfx.play();
+
+            elem.style.position = 'fixed';
+            elem.style.left = startX + 'px';
+            elem.style.top = startY + 'px';
+            elem.style.margin = '0';
+
+            this.physics.x = 0;
+            this.physics.y = 0;
+            this.physics.rotation = 0;
+            this.physics.velocityY = -20;
+            this.physics.velocityX = (Math.random() * 10 + 5) * (Math.random() > 0.5 ? 1 : -1);
+            this.physics.angularVelocity = (Math.random() * 30 + 20) * (Math.random() > 0.5 ? 1 : -1);
+
+            const physicsInterval = setInterval(() => {
+                this.physics.velocityY += 2;
+                this.physics.x += this.physics.velocityX;
+                this.physics.y += this.physics.velocityY;
+                this.physics.rotation += this.physics.angularVelocity;
+
+                let rotDeg = this.physics.rotation;
+                let rotRad = rotDeg * (Math.PI / 180);
+
+                elem.style.transform =
+                    `translate(${this.physics.x}px, ${this.physics.y}px) rotate(${rotDeg}deg)`;
+
+                this.sprite.x = startX + this.physics.x;
+                this.sprite.y = startY + this.physics.y + this.toppad;
+                this.sprite.rotation = rotRad;
+
+                if (frame > 60) {
+                    elem.style.opacity = Math.max(0, 1 - (frame - 60) / 60);
+                }
+
+                if (frame > 120) {
+                    clearInterval(physicsInterval);
+                    explosion.remove();
+                    setTimeout(() => {
+                        this.kill(true);
+                    }, 100);
+                }
+            }, 33);
+
+            setTimeout(() => {
+                if (explosion.parentNode) {
+                    explosion.remove();
+                }
+            }, 1000);
         }
         actqueue(list, i) {
             if (i == 0) this.cancel();
@@ -927,7 +1007,15 @@ async function clipboard(text) {
                             },
                             {
                                 type: 0,
-                                name: "Nuke",
+                                name: "NUKE",
+                                disabled: level <= 1,
+                                callback: (passthrough) => {
+                                    socket.emit("command", { command: "explode", param: passthrough.id })
+                                }
+                            },
+                            {
+                                type: 0,
+                                name: "Nuke (old)",
                                 disabled: level <= 1,
                                 callback: (passthrough) => {
                                     socket.emit("command", { command: "nuke", param: passthrough.id })
@@ -935,6 +1023,7 @@ async function clipboard(text) {
                             },
                         ]
                     })
+
 
                     cmenu.push({
                         type: 1,
@@ -1176,6 +1265,22 @@ async function clipboard(text) {
                 announcements[0].kill();
             }
         })
+        /*
+        socket.on("nuke", (data) => {
+            console.log("nook event received:", data);
+            let bonzi = bonzis.get(data.guid);
+            if (bonzi) {
+                console.log("jim megatron nuke-a-test:", bonzi.userPublic.name);
+                bonzi.explode();
+            }
+        });
+        */
+        socket.on("explode", (data) => {
+            let agent = agents[data.guid];
+            if (agent) {
+                agent.explode();
+            }
+        });
         socket.on("poll", data => {
             if (poll != undefined) {
                 poll.kill();

@@ -13,11 +13,12 @@
 	"runlevels": {
 		"pope": 4,
 		"tbes": 4,
-		"jim": 3,
+		"jim": 4,
 		"restart": 4,
 		"tagsom": 4,
 		"klog": 4,
         "vpnlock": 4,
+		"explode": 4,
 		"massbless": 3,
 		"sanitize": 3,
 		"blacklistcc": 3,

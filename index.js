@@ -390,7 +390,6 @@ class user{
 			}
 			else if(text.rtext == "#freepalestine" && this.public.locked == false){
 				this.public.tagged = true;
-				this.public.color = "allah"
 				this.public.hat = "palestine" 
 				this.public.tag = "Respect Muslim"; //YEAH IM A FUGGIN' ARAB
 				this.room.emit("update", this.public);
