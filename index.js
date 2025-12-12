@@ -28,7 +28,14 @@ function checkBlacklist(param){
     })
     return bad;
 }
-
+function normalizeIP(ip) {
+    if (!ip) return ip;
+    // If X-Forwarded-For or similar, take first IP in comma list
+    if (typeof ip === 'string' && ip.includes(',')) {
+        ip = ip.split(',')[0];
+    }
+    return ip.toString().trim();
+}
 //Read settings (READER IN COMMANDS LIBRARY)
 const config = commands.config;
 const colors = commands.colors;
@@ -70,20 +77,46 @@ function ipToInt(ip){
 	return ipInt;
 }
 
-function bancheck(ip){
-	let x = -1;
-	for(i=0; i<commands.bans.length;i++){
-		if(commands.bans[i] == ip || (ip.includes(":") && commands.bans[i] == ipToInt(ip)>>BigInt(64)) ){
-			x = i;
-			break;	
-		}
-	}
-	return x;
+function bancheck(ip) {
+    ip = normalizeIP(ip);
+    for (let i = 0; i < commands.bans.length; i++) {
+        // stored ban entries are normalized strings
+        if (commands.bans[i] === ip) {
+            return i;
+        }
+        // as a fallback, if previous entries are BigInt (older format), try to compare numerically:
+        try {
+            if (typeof commands.bans[i] === 'bigint') {
+                if (ip.includes(':')) {
+                    // ipToInt should exist in your codebase
+                    const test = ipToInt(ip) >> BigInt(64);
+                    if (commands.bans[i] === test) return i;
+                }
+            }
+        } catch (e) {
+            // ignore fallback errors
+        }
+    }
+    return -1;
 }
 
 
-commands.bans = fs.readFileSync("./config/bans.txt").toString().split("\n").map(e=>{return e.split("/")[0]}).map(e=>{if(e.includes(":")) return ipToInt(e)>>BigInt(64); else return e;});
-commands.reasons = fs.readFileSync("./config/bans.txt").toString().split("\n").map(e=>{return e.split("/")[1]})
+const rawBans = fs.existsSync("./config/bans.txt") ? fs.readFileSync("./config/bans.txt").toString().split("\n") : [];
+const parsedBans = rawBans
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .map(line => {
+        // split only on the first slash to allow '/' in reasons
+        const sep = line.indexOf('/');
+        if (sep === -1) return { ip: normalizeIP(line), reason: "" };
+        const ipPart = line.substring(0, sep);
+        const reasonPart = line.substring(sep + 1);
+        return { ip: normalizeIP(ipPart), reason: reasonPart };
+    });
+
+// populate arrays in a normalized, aligned way
+commands.bans = parsedBans.map(b => b.ip);
+commands.reasons = parsedBans.map(b => b.reason);
 
 //HTTP Server
 const app = new express();
