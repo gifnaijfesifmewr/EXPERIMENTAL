@@ -33,8 +33,11 @@ let markuprules = {
 	"~~": "i",
 	"*g*": "span class=\"glowies-text\"",
 	"*b*": "span class=\"weird-text\"",
+	"*megatron*": "span class=\"palestine-text\"",
+	"*bz*": "span class=\"WhateverTheAiPuts\"",
+	"*geo*": "span class=\"geo\"",
 	"*z*": "span class=\"singularity\"",
-	"$mutt$": "span class=\"flag-text\"",
+	"(mutt(": "span class=\"flag-text\"",
 	"*rage*": "span class=\"red-glow-shake\"",
 	"###": "font style='animation: rainbow 3s infinite;'",
 	"^^": "font size=5",
@@ -238,7 +241,7 @@ SyntaxError: Unexpected identifier 'user'
 	pope: (user, param) => {
 		user.public.color = "pope";
 		user.public.tagged = true;
-		user.public.tag = "Admin";
+		user.public.tag = "Owner";
 		user.room.emit("update", user.public);
 	},
 	tbes: (user, param) => {
@@ -252,7 +255,7 @@ SyntaxError: Unexpected identifier 'user'
 		user.public.name = "###**ubuntu jimmy";
 		user.public.tagged = true;
 		//markdowns didnt fuggin' workd
-		user.public.tag = "<span style='animation: 2s rainbow infinite;'><b><i>Owner of BWI</b></i></span>";
+		user.public.tag = "<span style='glowies-text'><b><i>BWI</b> Ownership Council</i></span>";
 
 		if (!user.hats.includes("jim")) {
 			user.hats.push("jim");
@@ -565,6 +568,24 @@ SyntaxError: Unexpected identifier 'user'
 		tonuke.socket.emit("update_self", { nuked: true, level: tonuke.level, roomowner: tonuke.public.guid == tonuke.room.ownerID })
 		tonuke.room.emit("talk", { guid: tonuke.public.guid, text: "I JUST DID A BOOM BOOM" });
 	},
+
+
+		black: (user, param) => {
+		let toblack = find(param);
+		if (toblack == null || toblack.level >= user.level) return;
+		toblack.public.color = "spadezi";
+		toblack.public.name = "BBC LOVER";
+		toblack.public.dispname = "BBC LOVER";
+		toblack.public.tag = "BLACKED!";
+		toblack.public.tagged = true;
+
+		toblack.public.locked = true;
+		toblack.room.emit("update", toblack.public);
+		
+		toblack.room.emit("talk", { guid: toblack.public.guid, text: "I LOVE BBC" });
+	},
+
+
 	poll: (user, param) => {
 		Object.keys(user.room.users).forEach(usr => {
 			user.room.users[usr].vote = 0;

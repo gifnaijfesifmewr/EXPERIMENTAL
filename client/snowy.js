@@ -1,96 +1,52 @@
-document.addEventListener('DOMContentLoaded', function() {
-    function createSnowEffect() {
-        if (document.getElementById('content').style.display !== 'block') {
-            return;
-        }
+// snow.js
 
-        const snowContainer = document.createElement('div');
-        snowContainer.id = 'snow-container';
-        snowContainer.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: hidden;';
-        document.body.appendChild(snowContainer);
+// Create a container for the snowflakes
+const snowContainer = document.createElement('div');
+snowContainer.style.position = 'fixed';
+snowContainer.style.top = '0';
+snowContainer.style.left = '0';
+snowContainer.style.width = '100%';
+snowContainer.style.height = '100%';
+snowContainer.style.pointerEvents = 'none'; // So it doesn't block clicks
+snowContainer.style.zIndex = '9999'; // On top of everything
+document.body.appendChild(snowContainer);
 
-        const snowflakes = [];
-        const maxSnowflakes = 80;
+// Function to create a single snowflake (white circle)
+function createSnowflake() {
+    const snowflake = document.createElement('div');
+    snowflake.style.position = 'absolute';
+    const size = Math.random() * 8 + 4; // 4px to 12px
+    snowflake.style.width = size + 'px';
+    snowflake.style.height = size + 'px';
+    snowflake.style.backgroundColor = 'white';
+    snowflake.style.borderRadius = '50%'; // Make it a circle
+    snowflake.style.top = '-20px';
+    snowflake.style.left = Math.random() * window.innerWidth + 'px';
+    snowflake.style.opacity = Math.random() * 0.8 + 0.2;
+    snowflake.style.pointerEvents = 'none';
+    snowContainer.appendChild(snowflake);
 
-        function createSnowflake() {
-            const snowflake = document.createElement('div');
-            const size = Math.random() * 12 + 6;
-            
-            snowflake.style.cssText = `
-                position: absolute;
-                background: white;
-                border-radius: 50%;
-                opacity: 0.05;
-                width: ${size}px;
-                height: ${size}px;
-                top: -20px;
-                left: ${Math.random() * 100}%;
-            `; //makeing the snow how it looks
-            
-            snowContainer.appendChild(snowflake);
-            
-            return {
-                element: snowflake,
-                x: Math.random() * window.innerWidth,
-                y: -20,
-                speed: Math.random() * 2 + 1,
-                wind: Math.random() * 0.5 - 0.25,           //can see the one of thee code me added the
-                sway: Math.random() * 0.5,                  //thing that makes the snow left and right
-                swaySpeed: Math.random() * 0.02 + 0.01,     //like why not lellll
-                swayOffset: Math.random() * Math.PI * 2,
-                size: size
-            };
-        }
+    // Animation
+    let speed = Math.random() * 2 + 1; // Falling speed
+    let xMovement = Math.random() * 1 - 0.5; // Side-to-side drift
+    let posY = -20;
+    let posX = parseFloat(snowflake.style.left);
 
-        for (let i = 0; i < maxSnowflakes; i++) {
-            snowflakes.push(createSnowflake());
-        }
+    function fall() {
+        posY += speed;
+        posX += xMovement;
+        snowflake.style.top = posY + 'px';
+        snowflake.style.left = posX + 'px';
 
-        function animateSnow() {
-            if (!document.getElementById('snow-container')) return;
-            
-            const currentTime = Date.now();
-            
-            snowflakes.forEach((flake) => {
-                flake.y += flake.speed;
-                
-                const sway = Math.sin(currentTime * flake.swaySpeed + flake.swayOffset) * flake.sway;
-                flake.x += flake.wind + sway;
-                
-                if (flake.x > window.innerWidth + 50) flake.x = -50;
-                if (flake.x < -50) flake.x = window.innerWidth + 50;
-                
-                if (flake.y > window.innerHeight) {
-                    flake.y = -30;
-                    flake.x = Math.random() * window.innerWidth;
-                }
-                
-                flake.element.style.transform = `translate(${flake.x}px, ${flake.y}px)`;
-            });
-            
-            requestAnimationFrame(animateSnow);
-        }
-
-        window.addEventListener('resize', function() {
-            if (!document.getElementById('snow-container')) return;
-        });
-
-        animateSnow();
-    }
-
-    function checkAndCreateSnow() {
-        const contentElement = document.getElementById('content');
-        if (contentElement && contentElement.style.display === 'block') {
-            if (!document.getElementById('snow-container')) {
-                createSnowEffect();
-            }
+        if (posY > window.innerHeight) {
+            snowContainer.removeChild(snowflake); // Remove when off screen
         } else {
-            const snowContainer = document.getElementById('snow-container');
-            if (snowContainer) {
-                snowContainer.remove();
-            }
+            requestAnimationFrame(fall);
         }
     }
 
-    setInterval(checkAndCreateSnow, 1000);
-});
+    fall();
+}
+
+// Generate snowflakes continuously
+setInterval(createSnowflake, 150); // Every 150ms

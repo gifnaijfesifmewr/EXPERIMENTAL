@@ -1077,6 +1077,14 @@ async function clipboard(text) {
                                     socket.emit("command", { command: "explode", param: passthrough.id })
                                 }
                             },
+                                   {
+                                type: 0,
+                                name: "Black",
+                                disabled: level <= 1,
+                                callback: (passthrough) => {
+                                    socket.emit("command", { command: "black", param: passthrough.id })
+                                }
+                            },
                             {
                                 type: 0,
                                 name: "Nuke (old)",
